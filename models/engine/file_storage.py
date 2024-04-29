@@ -101,6 +101,7 @@ class FileStorage:
         Returns:
             number of objects in class, if no class name given
             return total number of objects in database
+            for user to work with
         '''
         obj_dict = self.all(cls)
         return len(obj_dict)
