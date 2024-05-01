@@ -7,6 +7,7 @@ from datetime import datetime
 import inspect
 import models
 from models.engine import db_storage
+from models import storage
 from models.amenity import Amenity
 from models.base_model import BaseModel
 from models.city import City
@@ -77,12 +78,59 @@ class TestFileStorage(unittest.TestCase):
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_all_no_class(self):
-        """Test that all returns all rows when no class is passed"""
+        """Test that all returns all rows when no class is pass"""
+        storage.reload()
+        result = storage.all("")
+        self.assertIsInstance(result, dict)
+        self.assertEqual(len(result), 0)
+        new = User(email="adriel@hbtn.com", password="abc")
+        console = self.create()
+        console.onecmd("create State name=California")
+        result = storage.all("State")
+        self.assertTrue(len(result) > 0)
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_new(self):
         """test that new adds an object to the database"""
+        new_obj = State(name="California")
+        self.assertEqual(new_obj.name, "California")
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_save(self):
         """Test that save properly saves objects to file.json"""
+
+        new_state = State(name="NewYork")
+        storage.new(new_state)
+        save_id = new_state.id
+        result = storage.all("State")
+        temp_list = []
+        for k, v in result.items():
+            temp_list.append(k.split('.')[1])
+            obj = v
+        self.assertTrue(save_id in temp_list)
+        self.assertIsInstance(obj, State)
+
+    def test_get(self):
+        '''
+            Test if get method retrieves obj requested
+        '''
+        new_state = State(name="NewYork")
+        storage.new(new_state)
+        key = "State.{}".format(new_state.id)
+        result = storage.get("State", new_state.id)
+        self.assertTrue(result.id, new_state.id)
+        self.assertIsInstance(result, State)
+
+    def test_count(self):
+        '''
+            Test if count method returns expected number of objects
+        '''
+        storage.reload()
+        old_count = storage.count("State")
+        new_state1 = State(name="NewYork")
+        storage.new(new_state1)
+        new_state2 = State(name="Virginia")
+        storage.new(new_state2)
+        new_state3 = State(name="California")
+        storage.new(new_state3)
+        self.assertEqual(old_count + 3, storage.count("State"))
