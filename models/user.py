@@ -8,6 +8,7 @@ from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 import hashlib
 
+
 class User(BaseModel, Base):
     """Representation of a user """
     if models.storage_t == 'db':
@@ -27,11 +28,11 @@ class User(BaseModel, Base):
     def __init__(self, *args, **kwargs):
         """initializes user"""
         if kwargs:
-            passw = kwargs.pop('password',None)
+            passw = kwargs.pop('password', None)
             if passw:
-                kwargs['password'] = self._hash_password(kwargs['password'])
+                kwargs['password'] = self._hash_password(passw)
         super().__init__(*args, **kwargs)
 
     def _hash_password(self, password):
         """Hashes the password using MD5"""
-        return hashlib.md5(password.encode('utf-8')).hexdigest()
+        return hashlib.md5(password.encode()).hexdigest()
